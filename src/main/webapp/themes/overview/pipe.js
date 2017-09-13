@@ -288,55 +288,6 @@ function pipelineUtils() {
     }
 }
 
-function addPipelineHeader(html, component, data, c, resURL) {
-    html.push('<h1>' + htmlEncode(component.name));
-    if (data.allowPipelineStart) {
-        if (component.workflowComponent) {
-            html.push('&nbsp;<a id="startpipeline-' + c  +'" class="task-icon-link" href="#" onclick="triggerBuild(\'' + component.workflowUrl + '\', \'' + data.name + '\')">');
-        } else if (component.firstJobParameterized) {
-            html.push('&nbsp;<a id="startpipeline-' + c  +'" class="task-icon-link" href="#" onclick="triggerParameterizedBuild(\'' + component.firstJobUrl + '\', \'' + data.name + '\')">');
-        } else {
-            html.push('&nbsp;<a id="startpipeline-' + c  +'" class="task-icon-link" href="#" onclick="triggerBuild(\'' + component.firstJobUrl + '\', \'' + data.name + '\')">');
-        }
-        html.push('<img class="icon-clock icon-md" title="Build now" src="' + resURL + '/images/24x24/clock.png">');
-        html.push('</a>');
-    }
-    html.push('</h1>');
-}
-
-function displayErrorIfAvailable(data, errrorDivId) {
-    var cErrorDiv = Q('#' + errrorDivId);
-    if (data.error) {
-        cErrorDiv.html('Error: ' + data.error).show();
-    } else {
-        cErrorDiv.hide().html('');
-    }
-}
-
-function isTaskLinkedToConsoleLog(data, task) {
-    return data.linkToConsoleLog
-        && (task.status.success
-        || task.status.failed
-        || task.status.unstable
-        || task.status.cancelled);
-}
-
-function getPagination(showAvatars, component) {
-    if (showAvatars || component.pagingData === '') {
-        return '';
-    }
-
-    var html = [];
-    html.push('<div class="pagination">');
-    html.push(component.pagingData);
-    html.push('</div>');
-    return html.join('');
-}
-
-function getLink(data, link) {
-    return data.linkRelative ? link : rootURL + '/' + link;
-}
-
 function generateDescription(data, task) {
     if (data.showDescription && task.description && task.description !== '') {
         var html = ['<div class="infoPanelOuter">'];
@@ -413,37 +364,6 @@ function generateStaticAnalysisInfo(data, task) {
     return html.join('');
 }
 
-function trimWarningsFromString(label) {
-    var offset = label.indexOf('Warnings');
-    return offset === -1 ? label : label.substring(0, offset).trim();
-}
-
-function generatePromotionsInfo(data, task) {
-    if (!data.showPromotions || !task.status.promoted || !task.status.promotions || task.status.promotions.length === 0) {
-        return undefined;
-    }
-
-    var html = ['<div class="infoPanelOuter">'];
-    Q.each(task.status.promotions, function(i, promo) {
-        html.push('<div class="infoPanel"><div class="infoPanelInner"><div class="promo-layer">');
-        html.push('<img class="promo-icon" height="16" width="16" src="' + rootURL + promo.icon + '"/>');
-        html.push('<span class="promo-name"><a href="' + getLink(data,task.link) + 'promotion">' + htmlEncode(promo.name) + '</a></span><br/>');
-        if (promo.user !== 'anonymous') {
-            html.push('<span class="promo-user">' + promo.user + '</span>');
-        }
-        html.push('<span class="promo-time">' + formatDuration(promo.time) + '</span><br/>');
-        if (promo.params.length > 0) {
-            html.push('<br/>');
-        }
-        Q.each(promo.params, function (j, param) {
-            html.push(param.replace(/\r\n/g, '<br/>') + '<br />');
-        });
-        html.push('</div></div></div>');
-    });
-    html.push('</div>');
-    return html.join('');
-}
-
 function generateChangeLog(changes) {
     if (changes.length === 0) {
         return '<span>No changes.</span>';
@@ -472,82 +392,6 @@ function generateChangeLog(changes) {
     }
 
     return html.join('');
-}
-
-function generateAggregatedChangelog(stageChanges, aggregatedChangesGroupingPattern) {
-    var html = [];
-    html.push('<div class="aggregatedChangesPanelOuter">');
-    html.push('<div class="aggregatedChangesPanel">');
-    html.push('<div class="aggregatedChangesPanelInner">');
-    html.push('<b>Changes:</b>');
-    html.push('<ul>');
-
-    var changes = {};
-
-    var unmatchedChangesKey = '';
-
-    if (aggregatedChangesGroupingPattern) {
-        var re = new RegExp(aggregatedChangesGroupingPattern);
-
-        stageChanges.forEach(function(stageChange) {
-            var matches = stageChange.message.match(re) || [unmatchedChangesKey];
-
-            Q.unique(matches).forEach(function (match) {
-                changes[match] = changes[match] || [];
-                changes[match].push(stageChange);
-            });
-        });
-    } else {
-        changes[unmatchedChangesKey] = stageChanges;
-    }
-
-    var keys = Object.keys(changes).sort().filter(function(matchKey) {
-        return matchKey !== unmatchedChangesKey;
-    });
-
-    keys.push(unmatchedChangesKey);
-
-    keys.forEach(function(matchKey) {
-        if (matchKey !== unmatchedChangesKey) {
-            html.push('<li class="aggregatedKey"><b>' + matchKey + '</b><ul>');
-        }
-
-        if (changes[matchKey]) {
-            changes[matchKey].forEach(function (change) {
-                html.push('<li>');
-                html.push(change.message || '&nbsp;');
-                html.push('</li>');
-            });
-        }
-
-        if (matchKey !== unmatchedChangesKey) {
-            html.push('</ul></li>');
-        }
-    });
-
-    html.push('</ul>');
-    html.push('</div>');
-    html.push('</div>');
-    html.push('</div>');
-
-    return html.join('')
-}
-
-function getStageClassName(stagename) {
-    return 'stage_' + replace(stagename, ' ', '_');
-}
-
-function getTaskId(taskname, count) {
-    return 'task-' + replace(replace(taskname, ' ', '_'), '/', '_') + count;
-}
-
-function replace(string, replace, replaceWith) {
-    var re = new RegExp(replace, 'g');
-    return string.replace(re, replaceWith);
-}
-
-function formatDate(date, currentTime) {
-    return date !== null ? moment(date, 'YYYY-MM-DDTHH:mm:ss').from(moment(currentTime, 'YYYY-MM-DDTHH:mm:ss')) : '';
 }
 
 function getFormattedDate(date, format) {
