@@ -323,3 +323,71 @@ function equalheight(container) {
         }
     });
 }
+
+function checkBuildAvailability(html, component) {
+    if (component.pipelines.length === 0) {
+        html.push('No builds done yet.');
+    }
+}
+
+function checkForAggregatedView(html, component) {
+    if (component.pipelines.length > 1) {
+        html.push('<h2>Aggregated view</h2>');
+    }
+}
+
+function addSpecificTaskDetails(task, data, html, id) {
+    var progress = 100;
+    var progressClass = 'task-progress-notrunning';
+    var consoleLogLink = '';
+
+    if (task.status.percentage) {
+        progress = task.status.percentage;
+        progressClass = 'task-progress-running';
+    } else if (isTaskLinkedToConsoleLog(data, task)) {
+        consoleLogLink = 'console';
+    }
+
+    html.push(
+        '<div id="' + id + '" class="status stage-task ' + task.status.type + '">'
+        + '<div class="task-progress ' + progressClass + '" style="width: ' + progress + '%">'
+        + '<div class="task-content">'
+        + '<div class="task-header">'
+        + '<div class="taskname">'
+        + '<a href="' + getLink(data, task.link) + consoleLogLink + '">' + htmlEncode(task.name) + '</a>'
+        + '</div>'
+    );
+}
+
+function checkAvailableTasks(data, task, html, id, view, pipeline, component) {
+    if (data.allowManualTriggers && task.manual && task.manualStep.enabled && task.manualStep.permission) {
+        html.push('<div class="task-manual" id="manual-' + id + '" title="Trigger manual build" onclick="triggerManual(\'' + id + '\', \'' + task.id + '\', \'' + task.manualStep.upstreamProject + '\', \'' + task.manualStep.upstreamId + '\', \'' + view.viewUrl + '\')">');
+        html.push('</div>');
+        return;
+    }
+    if (pipeline.aggregated) {
+        return;
+    }
+    if (data.allowRebuild && task.rebuildable) {
+        html.push('<div class="task-rebuild" id="rebuild-' + id + '" title="Trigger rebuild" onclick="triggerRebuild(\'' + id + '\', \'' + task.id + '\', \'' + task.buildId + '\', \'' + view.viewUrl + '\')">');
+        html.push('</div>');
+    }
+    if (task.requiringInput) {
+        html.push('<div class="task-manual" id="input-' + id + '" title="Specify input" onclick="specifyInput(\'' + id + '\', \'' + component.name + '\', \'' + task.buildId + '\', \'' + view.viewUrl + '\')">');
+        html.push('</div>');
+    }
+}
+
+function addTimeDetails(html, timestamp, id, task) {
+    html.push('<div class="task-details">');
+
+    if (timestamp !== '') {
+        html.push('<div id="' + id + '.timestamp" class="timestamp">' + timestamp + '</div>');
+    }
+
+    if (task.status.duration >= 0) {
+        html.push('<div class="duration">' + formatDuration(task.status.duration) + '</div>');
+    }
+
+    html.push('</div>');
+}

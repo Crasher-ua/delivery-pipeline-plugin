@@ -38,8 +38,8 @@ function pipelineUtils() {
         displayErrorIfAvailable(data, errorDiv);
 
         if (lastResponse === null || JSON.stringify(data.pipelines) !== JSON.stringify(lastResponse.pipelines)) {
-            for (var z = 0; z < divNames.length; z++) {
-                Q('#' + divNames[z]).html('');
+            for (var divId = 0; divId < divNames.length; divId++) {
+                Q('#' + divNames[divId]).html('');
             }
 
             if (!data.pipelines || data.pipelines.length === 0) {
@@ -55,9 +55,8 @@ function pipelineUtils() {
                 addPipelineHeader(html, component, data, c, resURL);
                 html.push(getPagination(showAvatars, component));
 
-                if (component.pipelines.length === 0) {
-                    html.push('No builds done yet.');
-                }
+                checkBuildAvailability(html, component);
+
                 for (var i = 0; i < component.pipelines.length; i++) {
                     pipeline = component.pipelines[i];
 
@@ -98,8 +97,8 @@ function pipelineUtils() {
                         if (showChanges && pipeline.changes && pipeline.changes.length > 0) {
                             html.push(generateChangeLog(pipeline.changes));
                         }
-                    } else if (component.pipelines.length > 1) {
-                        html.push('<h2>Aggregated view</h2>');
+                    } else {
+                        checkForAggregatedView(html, component);
                     }
 
                     html.push('<section class="pipeline">');
@@ -139,9 +138,6 @@ function pipelineUtils() {
                         var task;
                         var id;
                         var timestamp;
-                        var progress;
-                        var progressClass;
-                        var consoleLogLink = '';
 
                         for (var k = 0; k < stage.tasks.length; k++) {
                             task = stage.tasks[k];
@@ -152,57 +148,19 @@ function pipelineUtils() {
 
                             tasks.push({id: id, taskId: task.id, buildId: task.buildId});
 
-                            progress = 100;
-                            progressClass = 'task-progress-notrunning';
+                            addSpecificTaskDetails(task, data, html, id);
+                            checkAvailableTasks(data, task, html, id, view, pipeline, component);
 
-                            if (task.status.percentage) {
-                                progress = task.status.percentage;
-                                progressClass = 'task-progress-running';
-                            } else if (isTaskLinkedToConsoleLog(data, task)) {
-                                consoleLogLink = 'console';
-                            }
+                            html.push('</div>');
 
-                            html.push(
-                                '<div id="' + id + '" class="status stage-task ' + task.status.type + '">'
-                                + '<div class="task-progress ' + progressClass + '" style="width: ' + progress + '%">'
-                                + '<div class="task-content">'
-                                + '<div class="task-header">'
-                                + '<div class="taskname">'
-                                + '<a href="' + getLink(data, task.link) + consoleLogLink + '">' + htmlEncode(task.name) + '</a>'
-                                + '</div>'
-                            );
+                            addTimeDetails(html, timestamp, id, task);
 
-                            if (data.allowManualTriggers && task.manual && task.manualStep.enabled && task.manualStep.permission) {
-                                html.push('<div class="task-manual" id="manual-' + id + '" title="Trigger manual build" onclick="triggerManual(\'' + id + '\', \'' + task.id + '\', \'' + task.manualStep.upstreamProject + '\', \'' + task.manualStep.upstreamId + '\', \'' + view.viewUrl + '\')">');
-                                html.push('</div>');
-                            } else  if (!pipeline.aggregated) {
-                                if (data.allowRebuild && task.rebuildable) {
-                                    html.push('<div class="task-rebuild" id="rebuild-' + id + '" title="Trigger rebuild" onclick="triggerRebuild(\'' + id + '\', \'' + task.id + '\', \'' + task.buildId + '\', \'' + view.viewUrl + '\')">');
-                                    html.push('</div>');
-                                }
-                                if (task.requiringInput) {
-                                    html.push('<div class="task-manual" id="input-' + id + '" title="Specify input" onclick="specifyInput(\'' + id + '\', \'' + component.name + '\', \'' + task.buildId + '\', \'' + view.viewUrl + '\')">');
-                                    html.push('</div>');
-                                }
-                            }
-
-                            html.push('</div><div class="task-details">');
-
-                            if (timestamp !== '') {
-                                html.push('<div id="' + id + '.timestamp" class="timestamp">' + timestamp + '</div>');
-                            }
-
-                            if (task.status.duration >= 0) {
-                                html.push('<div class="duration">' + formatDuration(task.status.duration) + '</div>');
-                            }
-
-                            html.push('</div></div></div></div>');
+                            html.push('</div></div></div>');
 
                             html.push(generateDescription(data, task));
                             html.push(generateTestInfo(data, task));
                             html.push(generateStaticAnalysisInfo(data, task));
                             html.push(generatePromotionsInfo(data, task));
-
                         }
 
                         if (pipeline.aggregated && stage.changes && stage.changes.length > 0) {
