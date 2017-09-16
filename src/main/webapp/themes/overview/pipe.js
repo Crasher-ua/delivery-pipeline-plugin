@@ -137,32 +137,11 @@ function pipelineUtils() {
                             html.push(' <div class="stage-version">' + htmlEncode(stageversion) + '</div><div class="clear"></div></div>');
                         }
 
-                        var task;
-                        var id;
-                        var timestamp;
-
                         for (var k = 0; k < stage.tasks.length; k++) {
-                            task = stage.tasks[k];
-
-                            id = getTaskId(task.id, i);
-
-                            timestamp = formatDate(task.status.timestamp, lastUpdate);
-
+                            var task = stage.tasks[k];
+                            var id = getTaskId(task.id, i);
                             tasks.push({id: id, taskId: task.id, buildId: task.buildId});
-
-                            addSpecificTaskDetails(task, data, html, id);
-                            checkAvailableTasks(data, task, html, id, view, pipeline, component);
-
-                            html.push('</div>');
-
-                            addTimeDetails(html, timestamp, id, task);
-
-                            html.push('</div></div></div>');
-
-                            html.push(generateDescription(data, task));
-                            html.push(generateTestInfo(data, task));
-                            html.push(generateStaticAnalysisInfo(data, task));
-                            html.push(generatePromotionsInfo(data, task));
+                            buildFullTaskLayout(task, data, html, id, view, pipeline, component, lastUpdate);
                         }
 
                         if (pipeline.aggregated && stage.changes && stage.changes.length > 0) {
