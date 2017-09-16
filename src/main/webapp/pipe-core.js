@@ -391,3 +391,21 @@ function addTimeDetails(html, timestamp, id, task) {
 
     html.push('</div>');
 }
+
+function buildFullTaskLayout(task, data, html, id, view, pipeline, component, lastUpdate) {
+    var timestamp = formatDate(task.status.timestamp, lastUpdate);
+
+    addSpecificTaskDetails(task, data, html, id);
+    checkAvailableTasks(data, task, html, id, view, pipeline, component);
+
+    html.push('</div>');
+
+    addTimeDetails(html, timestamp, id, task);
+
+    html.push('</div></div></div>');
+
+    html.push(generateDescription(data, task));
+    html.push(generateTestInfo(data, task));
+    html.push(generateStaticAnalysisInfo(data, task));
+    html.push(generatePromotionsInfo(data, task));
+}
