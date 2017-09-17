@@ -409,3 +409,12 @@ function buildFullTaskLayout(task, data, html, id, view, pipeline, component, la
     html.push(generateStaticAnalysisInfo(data, task));
     html.push(generatePromotionsInfo(data, task));
 }
+
+function buildAllStageTasks(stage, i, tasks, data, html, view, pipeline, component, lastUpdate) {
+    for (var k = 0; k < stage.tasks.length; k++) {
+        var task = stage.tasks[k];
+        var id = getTaskId(task.id, i);
+        tasks.push({id: id, taskId: task.id, buildId: task.buildId});
+        buildFullTaskLayout(task, data, html, id, view, pipeline, component, lastUpdate);
+    }
+}

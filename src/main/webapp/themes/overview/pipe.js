@@ -137,12 +137,7 @@ function pipelineUtils() {
                             html.push(' <div class="stage-version">' + htmlEncode(stageversion) + '</div><div class="clear"></div></div>');
                         }
 
-                        for (var k = 0; k < stage.tasks.length; k++) {
-                            var task = stage.tasks[k];
-                            var id = getTaskId(task.id, i);
-                            tasks.push({id: id, taskId: task.id, buildId: task.buildId});
-                            buildFullTaskLayout(task, data, html, id, view, pipeline, component, lastUpdate);
-                        }
+                        buildAllStageTasks(stage, i, tasks, data, html, view, pipeline, component, lastUpdate);
 
                         if (pipeline.aggregated && stage.changes && stage.changes.length > 0) {
                             html.push(generateAggregatedChangelog(stage.changes, aggregatedChangesGroupingPattern));
