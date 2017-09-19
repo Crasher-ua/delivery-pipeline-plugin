@@ -1,27 +1,6 @@
 function pipelineUtils() {
     var self = this;
-    this.updatePipelines = function(divNames, errorDiv, view, fullscreen, page, component, showChanges, aggregatedChangesGroupingPattern, timeout, pipelineid, jsplumb) {
-        Q.ajax({
-            url: rootURL + '/' + view.viewUrl + 'api/json' + '?page=' + page + '&component=' + component + '&fullscreen=' + fullscreen,
-            dataType: 'json',
-            async: true,
-            cache: false,
-            timeout: 20000,
-            success: function (data) {
-                self.refreshPipelines(data, divNames, errorDiv, view, fullscreen, showChanges, aggregatedChangesGroupingPattern, pipelineid, jsplumb);
-                setTimeout(function () {
-                    self.updatePipelines(divNames, errorDiv, view, fullscreen, page, component, showChanges, aggregatedChangesGroupingPattern, timeout, pipelineid, jsplumb);
-                }, timeout);
-            },
-            error: function (xhr, status, error) {
-                Q('#' + errorDiv).html('Error communicating to server! ' + htmlEncode(error)).show();
-                jsplumb.repaintEverything();
-                setTimeout(function () {
-                    self.updatePipelines(divNames, errorDiv, view, fullscreen, page, component, showChanges, aggregatedChangesGroupingPattern, timeout, pipelineid, jsplumb);
-                }, timeout);
-            }
-        });
-    }
+    this.updatePipelines = handlePipelineUpdate(self);
 
     var lastResponse = null;
 
