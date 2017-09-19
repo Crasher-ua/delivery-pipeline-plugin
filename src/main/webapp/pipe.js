@@ -126,15 +126,8 @@ function pipelineUtils() {
 
                         html.push('<div class="pipeline-cell">');
                         html.push('<div id="' + getStageId(stage.id + '', i) + '" class="stage ' + getStageClassName(stage.name) + '">');
-                        html.push('<div class="stage-header"><div class="stage-name">' + htmlEncode(stage.name) + '</div>');
 
-                        if (!pipeline.aggregated) {
-                            html.push('</div>');
-                        } else {
-                            var stageversion = stage.version || 'N/A';
-                            html.push(' <div class="stage-version">' + htmlEncode(stageversion) + '</div></div>');
-                        }
-
+                        buildStageHeader(html, stage, pipeline, false);
                         buildAllStageTasks(stage, i, tasks, data, html, view, pipeline, component, lastUpdate);
 
                         if (pipeline.aggregated && stage.changes && stage.changes.length > 0) {

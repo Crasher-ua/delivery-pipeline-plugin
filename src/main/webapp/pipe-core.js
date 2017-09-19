@@ -418,3 +418,23 @@ function buildAllStageTasks(stage, i, tasks, data, html, view, pipeline, compone
         buildFullTaskLayout(task, data, html, id, view, pipeline, component, lastUpdate);
     }
 }
+
+function buildStageHeader(html, stage, pipeline, clear) {
+    html.push('<div class="stage-header"><div class="stage-name">' + htmlEncode(stage.name) + '</div>');
+
+    if (!pipeline.aggregated) {
+        if (clear) {
+            html.push('<div class="clear"></div>');
+        }
+        html.push('</div>');
+    } else {
+        var stageversion = stage.version || 'N/A';
+        html.push(' <div class="stage-version">');
+        html.push(htmlEncode(stageversion));
+        html.push('</div>');
+        if (clear) {
+            html.push('<div class="clear"></div>');
+        }
+        html.push('</div>');
+    }
+}
