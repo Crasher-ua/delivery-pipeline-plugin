@@ -463,3 +463,81 @@ function buildStageHeader(html, stage, pipeline, clear) {
         html.push('</div>');
     }
 }
+
+function generateDescription(data, task) {
+    if (!data.showDescription || !task.description || task.description === '') {
+        return undefined;
+    }
+
+    var html = ['<div class="infoPanelOuter">'];
+    html.push('<div class="infoPanel"><div class="infoPanelInner">' + task.description.replace(/\r\n/g, '<br/>') + '</div></div>');
+    html.push('</div>');
+    return html.join('');
+}
+
+function generateTestInfo(data, task) {
+    if (!data.showTestResults || !task.testResults || task.testResults.length === 0) {
+        return undefined;
+    }
+
+    var html = ['<div class="infoPanelOuter">'];
+
+    Q.each(task.testResults, function(i, analysis) {
+        html.push('<div class="infoPanel"><div class="infoPanelInner">');
+        html.push('<a href=' + getLink(data,analysis.url) + '>' + analysis.name + '</a>');
+        html.push('<table id="priority.summary" class="pane">');
+        html.push('<tbody>');
+        html.push('<tr>');
+        html.push('<td class="pane-header">Total</td>');
+        html.push('<td class="pane-header">Failures</td>');
+        html.push('<td class="pane-header">Skipped</td>');
+        html.push('</tr>');
+        html.push('</tbody>');
+        html.push('<tbody>');
+        html.push('<tr>');
+        html.push('<td class="pane">' + analysis.total + '</td>');
+        html.push('<td class="pane">' + analysis.failed + '</td>');
+        html.push('<td class="pane">' + analysis.skipped + '</td>');
+        html.push('</tr>');
+        html.push('</tbody>');
+        html.push('</table>');
+        html.push('</div></div>');
+    });
+
+    html.push('</div>');
+    return html.join('');
+}
+
+function generateStaticAnalysisInfo(data, task) {
+    if (!data.showStaticAnalysisResults || !task.staticAnalysisResults || task.staticAnalysisResults.length === 0) {
+        return undefined;
+    }
+
+    var html = ['<div class="infoPanelOuter">'];
+    html.push('<div class="infoPanel"><div class="infoPanelInner">');
+    html.push('<table id="priority.summary" class="pane">');
+    html.push('<thead>');
+    html.push('<tr>');
+    html.push('<td class="pane-header">Warnings</td>');
+    html.push('<td class="pane-header" style="font-size: smaller; vertical-align: bottom">High</td>');
+    html.push('<td class="pane-header" style="font-size: smaller; vertical-align: bottom">Normal</td>');
+    html.push('<td class="pane-header" style="font-size: smaller; vertical-align: bottom">Low</td>');
+    html.push('</tr>');
+    html.push('</thead>');
+    html.push('<tbody>');
+
+    Q.each(task.staticAnalysisResults, function(i, analysis) {
+        html.push('<tr>');
+        html.push('<td class="pane"><a href=' + getLink(data,analysis.url) + '>' + trimWarningsFromString(analysis.name) + '</a></td>');
+        html.push('<td class="pane" style="text-align: center">' + analysis.high + '</td>');
+        html.push('<td class="pane" style="text-align: center">' + analysis.normal + '</td>');
+        html.push('<td class="pane" style="text-align: center">' + analysis.low + '</td>');
+        html.push('</tr>');
+    });
+
+    html.push('</tbody>');
+    html.push('</table>');
+    html.push('</div></div>');
+    html.push('</div>');
+    return html.join('');
+}
