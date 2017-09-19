@@ -161,35 +161,9 @@ function pipelineUtils() {
                 });
             });
         } else {
-            var comp;
-            var pipe;
-            var head;
-            var st;
-            var ta;
-            var time;
-
-            for (var p = 0; p < data.pipelines.length; p++) {
-                comp = data.pipelines[p];
-                for (var d = 0; d < comp.pipelines.length; d++) {
-                    pipe = comp.pipelines[d];
-                    head = document.getElementById(pipe.id);
-                    if (head) {
-                        head.innerHTML = formatDate(pipe.timestamp, lastUpdate)
-                    }
-
-                    for (var l = 0; l < pipe.stages.length; l++) {
-                        st = pipe.stages[l];
-                        for (var m = 0; m < st.tasks.length; m++) {
-                            ta = st.tasks[m];
-                            time = document.getElementById(getTaskId(ta.id, d) + '.timestamp');
-                            if (time) {
-                                time.innerHTML = formatDate(ta.status.timestamp, lastUpdate);
-                            }
-                        }
-                    }
-                }
-            }
+            handleRepeatingPipelineRefresh(data, lastUpdate);
         }
+
         jsplumb.repaintEverything();
     }
 }
