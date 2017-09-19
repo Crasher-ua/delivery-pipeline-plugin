@@ -572,3 +572,34 @@ function generateStaticAnalysisInfo(data, task) {
     html.push('</div>');
     return html.join('');
 }
+
+function buildAllFlowchartsConnections(data, jsplumb) {
+    var source;
+    var target;
+
+    Q.each(data.pipelines, function (dataPipelineIndex, component) {
+        Q.each(component.pipelines, function (componentPipelineIndex, pipeline) {
+            Q.each(pipeline.stages, function (pipelineStagesIndex, stage) {
+                if (stage.downstreamStages) {
+                    Q.each(stage.downstreamStageIds, function (l, value) {
+                        source = getStageId(stage.id + '', componentPipelineIndex);
+                        target = getStageId(value + '', componentPipelineIndex);
+
+                        jsplumb.connect({
+                            source: source,
+                            target: target,
+                            anchors: [[1, 0, 1, 0, 0, 37], [0, 0, -1, 0, 0, 37]], // allow boxes to increase in height but keep anchor lines on the top
+                            overlays: [
+                                [ 'Arrow', { location: 1, foldback: 0.9, width: 12, length: 12}]
+                            ],
+                            cssClass: 'relation',
+                            connector: ['Flowchart', { stub: 25, gap: 2, midpoint: 1, alwaysRespectStubs: true } ],
+                            paintStyle: { lineWidth: 2, strokeStyle: 'rgba(118,118,118,1)' },
+                            endpoint: ['Blank']
+                        });
+                    });
+                }
+            });
+        });
+    });
+}
