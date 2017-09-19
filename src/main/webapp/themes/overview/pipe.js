@@ -16,15 +16,8 @@ function pipelineUtils() {
         displayErrorIfAvailable(data, errorDiv);
 
         if (lastResponse === null || JSON.stringify(data.pipelines) !== JSON.stringify(lastResponse.pipelines)) {
-            for (var divId = 0; divId < divNames.length; divId++) {
-                Q('#' + divNames[divId]).html('');
-            }
+            initializePipeline(divNames, data, pipelineid, jsplumb);
 
-            if (!data.pipelines || data.pipelines.length === 0) {
-                Q('#pipeline-message-' + pipelineid).html('No pipelines configured or found. Please review the <a href="configure">configuration</a>')
-            }
-
-            jsplumb.reset();
             for (var c = 0; c < data.pipelines.length; c++) {
                 html = [];
                 component = data.pipelines[c];

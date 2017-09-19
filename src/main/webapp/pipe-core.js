@@ -603,3 +603,15 @@ function buildAllFlowchartsConnections(data, jsplumb) {
         });
     });
 }
+
+function initializePipeline(divNames, data, pipelineid, jsplumb) {
+    for (var divId = 0; divId < divNames.length; divId++) {
+        Q('#' + divNames[divId]).html('');
+    }
+
+    if (!data.pipelines || data.pipelines.length === 0) {
+        Q('#pipeline-message-' + pipelineid).html('No pipelines configured or found. Please review the <a href="configure">configuration</a>')
+    }
+
+    jsplumb.reset();
+}
